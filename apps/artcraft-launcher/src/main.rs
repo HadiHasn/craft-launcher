@@ -691,8 +691,14 @@ impl Launcher {
             // Sleep until woken, or until `LauncherUi::logic` wants its next scheduled look.
             match self.run_again.try_iter().min() {
                 Some(wait) => {
+                    // A windowless launcher has nothing to draw: cap how often repaint
+                    // requests may wake the tray loop, so a stuck check or a burst of
+                    // progress events can't keep it busy-spinning (issue #501).
+                    let wait = wait.max(Duration::from_millis(200));
                     if woken.recv_timeout(wait) == Err(RecvTimeoutError::Disconnected) {
                         std::thread::sleep(wait);
+                }
+            }
                     }
                 }
                 None => {
