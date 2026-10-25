@@ -455,7 +455,8 @@ pub fn progress(ui: &mut Ui, fraction: Option<f32>, caption: &str, color: Color3
                     p.rect_filled(seg, CornerRadius::ZERO, color);
                 }
             }
-            ui.ctx().request_repaint();
+            // An indeterminate bar animates cheaply: refresh at ~30 fps instead of every // frame, so it doesn't spin the CPU at full speed on low-end machines.
+            ui.ctx().request_repaint_after(std::time::Duration::from_millis(33));
         }
     }
     p.text(egui::pos2(rect.left(), rect.top() + 9.0), egui::Align2::LEFT_CENTER, caption, egui::FontId::new(12.0, theme::medium()), t.muted);
